@@ -191,12 +191,40 @@ const updateUI = function (acc) {
 ///////////////////////////////////////
 // Event handlers
 
-let currentAccount;
+let currentAccount, timer;
 
 // FAKE LOGIN
 // currentAccount = account1;
 // updateUI(account1);
 // containerApp.style.opacity = 100;
+
+const startLogoutTimer = function () {
+  const tick = function () {
+    const min = `${Math.trunc(time / 60)}`.padStart(2, 0);
+    const sec = String(Math.trunc(time % 60)).padStart(2, 0);
+
+    // In each call, print the remaining time to UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    // When 0 seconds, stop timer and logout user
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Login to get started`;
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease 1s
+    time--;
+  };
+
+  // Set time to 5 minutes
+  let time = 300;
+
+  // Call the timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
@@ -246,6 +274,10 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
+    // Start timer
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -273,6 +305,10 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movementsDates.push(new Date().toISOString());
     receiverAcc.movementsDates.push(new Date().toISOString());
 
+    // Reset timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -291,6 +327,10 @@ btnLoan.addEventListener('click', function (e) {
 
       // Add loan date
       currentAccount.movementsDates.push(new Date().toISOString());
+
+      // Reset timer
+      clearInterval(timer);
+      timer = startLogoutTimer();
 
       // Update UI
       updateUI(currentAccount);
